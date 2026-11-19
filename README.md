@@ -10,7 +10,7 @@ EMRIcat produces synthetic EMRI catalogs derived from massive black hole populat
 
 - Elisa Bortolas — elisa.bortolas@inaf.it
 - Luca Broggi — luca.broggi@unimib.it
-- Alessandro Trinca — alessandro.trica@inaf.it
+- Alessandro Trinca — alessandro.trinca@inaf.it
 - Matteo Bonetti — matteo.bonetti@unimib.it
 
 ## Installation
