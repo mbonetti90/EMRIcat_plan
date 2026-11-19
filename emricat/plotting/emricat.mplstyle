@@ -1,0 +1,24 @@
+# Common matplotlib style for all EMRICat figures.
+# Loaded by emricat.plotting.use_style(); edit here to change every plot at once.
+figure.figsize      : 6.0, 4.2
+figure.dpi          : 110
+savefig.dpi         : 200
+savefig.bbox        : tight
+font.size           : 11
+axes.labelsize      : 12
+axes.titlesize      : 12
+legend.fontsize     : 9
+legend.frameon      : False
+axes.grid           : True
+grid.alpha          : 0.25
+grid.linewidth      : 0.6
+axes.spines.top     : False
+axes.spines.right   : False
+xtick.direction     : in
+ytick.direction     : in
+xtick.minor.visible : True
+ytick.minor.visible : True
+lines.linewidth     : 2.0
+lines.markersize    : 5
+image.cmap          : viridis
+axes.prop_cycle     : cycler('color', ['2a78d6', 'eb6834', '1baf7a', 'eda100', 'e87ba4', '008300', '6250d6', 'e34948'])

@@ -1,0 +1,52 @@
+# =====================================================================
+# BASELINE configuration (slides 4-14). Template for science runs:
+# copy it, set model_name / population.path, and run
+#
+#   python -m emricat.pipeline configs/<my_model>.yaml
+#
+# It will fail with NotImplementedError until the groups fill the stubs:
+# that is expected, the error tells you which function is missing.
+# Every option and its default is documented in emricat/config.py.
+# =====================================================================
+run:
+  model_name: TNG100            # free label, used for the output file name
+  output_dir: output
+  seed: 12345
+  t_obs: 4.0                    # [yr]
+  z_max: 4.0                    # EMRI horizon for LISA (slide 3)
+  chunk_size: 2000000
+
+population:                     # GROUP 1 (slide 4)
+  reader: mbhcat
+  path: /path/to/MBHcat/TNG100  # HDF5 files (not in the repository)
+  redshifts: null               # null = all available snapshots up to z_max
+  min_stellar_mass: 0.0         # resolution cut [Msun]
+  min_mbh_mass: 0.0             # [Msun]
+  params: {}                    # reader-specific (box size, h, ...)
+
+nsc:                            # GROUP 2 (slides 5-6)
+  occupation: all               # "all" | "hoyer21" | "double_logistic"
+  occupation_params: {}
+  mass_relation: hoyer23        # adopted baseline
+  mass_scatter_dex: 0.0         # TODO: set from Hoyer+23
+  radius_relation: pechetti20   # adopted baseline
+  radius_scatter_dex: 0.0       # TODO: set from Pechetti+20
+  relaxation: half_mass         # must match Broggi+22 definition!
+  relaxation_params: {}
+
+emri:                           # GROUP 3 (slides 7-10)
+  rate_curve: broggi22          # needs emricat/data/broggi22_fig6_emri.txt
+  rate_normalization: broggi22
+  rate_params: {}
+  merger_clock: merger_trees    # A. Trinca
+  merger_clock_params: {}
+  time_since_merger: uniform    # "uniform" | "length_biased"
+
+universe:                       # STEPS 4-5 (slides 12-14)
+  shell_dt: 1.0e8               # 100 Myr; null = midpoints between snapshots
+  shell_volume: exact           # "exact" | "thin_shell"
+  replica_rounding: poisson     # "poisson" | "stochastic_round"
+  max_replicas_per_galaxy: null # null = brute force (reference)
+  event_redshift: uniform_in_volume
+  detection: none               # SNR criterion to be defined
+  detection_params: {}

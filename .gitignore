@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# EMRICat
+output/
+data/*
+!data/README.md
+*.h5
+*.hdf5
+!emricat/data/*.h5
+figures/

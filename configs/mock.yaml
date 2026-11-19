@@ -1,0 +1,42 @@
+# =====================================================================
+# MOCK run: every step uses TOY prescriptions (emricat/mock.py).
+# Purpose: test the plumbing, the plots and the timing. NOT PHYSICS.
+#
+#   python -m emricat.pipeline configs/mock.yaml
+# =====================================================================
+run:
+  model_name: mock
+  output_dir: output
+  seed: 12345
+  t_obs: 4.0            # LISA mission duration [yr]
+  z_max: 4.0
+  chunk_size: 1000000
+
+population:             # Group 1
+  reader: mock
+  params:
+    redshifts: [0.1, 0.5, 1.0, 2.0, 3.0]
+    n_gal: 2000
+    box_size_cmpc: 100.0
+
+nsc:                    # Group 2
+  occupation: all
+  mass_relation: toy
+  mass_scatter_dex: 0.3
+  radius_relation: toy
+  radius_scatter_dex: 0.2
+  relaxation: toy
+
+emri:                   # Group 3
+  rate_curve: toy
+  rate_normalization: toy
+  merger_clock: toy
+  time_since_merger: uniform
+
+universe:               # Steps 4-5
+  shell_dt: 1.0e8       # 100 Myr shells [yr]
+  shell_volume: exact
+  replica_rounding: poisson
+  max_replicas_per_galaxy: 200   # cost control; null = brute force
+  event_redshift: uniform_in_volume
+  detection: none
