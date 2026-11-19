@@ -6,7 +6,7 @@
 #
 # It will fail with NotImplementedError until the groups fill the stubs:
 # that is expected, the error tells you which function is missing.
-# Every option and its default is documented in emricat/config.py.
+# Every option and its default is documented in src/emricat/config.py.
 # =====================================================================
 run:
   model_name: TNG100            # free label, used for the output file name
@@ -17,12 +17,12 @@ run:
   chunk_size: 2000000
 
 population:                     # GROUP 1 (slide 4)
-  reader: mbhcat
-  path: /path/to/MBHcat/TNG100  # HDF5 files (not in the repository)
+  reader: mbhcat                # MBHcat format v2.1 (see src/hdf5_MBHcat_catalog_v2.1.py)
+  path: data/TNG100.hdf5        # one HDF5 file per model, from the shared Drive (not in git)
   redshifts: null               # null = all available snapshots up to z_max
   min_stellar_mass: 0.0         # resolution cut [Msun]
   min_mbh_mass: 0.0             # [Msun]
-  params: {}                    # reader-specific (box size, h, ...)
+  params: {}                    # reader-specific options (none needed for mbhcat)
 
 nsc:                            # GROUP 2 (slides 5-6)
   occupation: all               # "all" | "hoyer21" | "double_logistic"
@@ -35,7 +35,7 @@ nsc:                            # GROUP 2 (slides 5-6)
   relaxation_params: {}
 
 emri:                           # GROUP 3 (slides 7-10)
-  rate_curve: broggi22          # needs emricat/data/broggi22_fig6_emri.txt
+  rate_curve: broggi22          # needs src/emricat/data/broggi22_fig6_emri.txt
   rate_normalization: broggi22
   rate_params: {}
   merger_clock: merger_trees    # A. Trinca

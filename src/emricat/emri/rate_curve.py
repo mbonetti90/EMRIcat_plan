@@ -15,7 +15,7 @@ Two registries:
                             returning (Gamma_hat_E [1/yr], t_E [yr])
 
 The table of Fig. 6 (reproduced by B. Sersante and D. Mancieri) should be
-committed as ``emricat/data/broggi22_fig6_emri.txt`` with two columns
+committed as ``src/emricat/data/broggi22_fig6_emri.txt`` with two columns
 ``x = t/t_E`` and ``f = Gamma/Gamma_hat``.
 """
 

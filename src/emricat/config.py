@@ -122,7 +122,7 @@ class UniverseConfig:
     #: How to turn the (non-integer) expected number of copies N_i into an integer:
     #: "poisson" (unbiased, adds cosmic variance) or "stochastic_round" (floor + Bernoulli).
     replica_rounding: str = "poisson"
-    #: Monte Carlo cost control, see emricat/universe/replication.py.
+    #: Monte Carlo cost control, see src/emricat/universe/replication.py.
     #: None = brute force: every copy of every galaxy is drawn explicitly (slide 14).
     #: K (int) = draw at most K replicas per galaxy, each standing for N_i/K real
     #: galaxies (column ``replica_weight``). Expected counts are unchanged.

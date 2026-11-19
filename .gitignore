@@ -220,10 +220,18 @@ __marimo__/
 .streamlit/secrets.toml
 
 # EMRICat
-output/
+# Data (hosted on Google Drive, see README.md and data/README_DATA.md)
 data/*
-!data/README.md
+!data/README_DATA.md
+# Output
+output/
+figures/
+# Large HDF5 files never go in git (small reference tables in src/emricat/data/ are allowed)
 *.h5
 *.hdf5
-!emricat/data/*.h5
-figures/
+!src/emricat/data/*.h5
+# Local config
+config_local.json
+# OS
+.DS_Store
+Thumbs.db

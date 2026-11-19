@@ -1,4 +1,4 @@
-# `emricat/data/` — small reference tables shipped with the code
+# `src/emricat/data/` — small reference tables shipped with the code
 
 | file | content | owner | status |
 |------|---------|-------|--------|

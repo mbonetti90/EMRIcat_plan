@@ -80,7 +80,7 @@ class Catalogue:
             raise KeyError(f"Column '{name}' already exists (use overwrite=True).")
         if name not in COLUMNS:
             warnings.warn(
-                f"Column '{name}' is not declared in emricat/columns.py. "
+                f"Column '{name}' is not declared in src/emricat/columns.py. "
                 "Please add it there with its unit and description.",
                 stacklevel=2,
             )

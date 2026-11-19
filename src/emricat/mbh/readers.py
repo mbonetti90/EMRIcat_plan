@@ -7,8 +7,11 @@ Downstream code only ever talks to the :class:`BaseReader` interface.
 
 How to add a new model
 ----------------------
+Models delivered in the MBHcat v2.1 format are read by :class:`MBHcatReader`
+(``population.reader: mbhcat``). A new class is needed only for other formats.
+
 1. Inspect the file:  ``python scripts/inspect_hdf5.py path/to/file.h5``
-2. Subclass :class:`BaseReader` (copy :class:`MBHcatReader` as a template).
+2. Subclass :class:`BaseReader` (use :class:`MBHcatReader` as a template).
 3. Implement ``available_redshifts`` and ``_read_raw``.
 4. Register it in ``READERS`` at the bottom of this file.
 5. Add a test in ``tests/test_group1_mbh.py`` (e.g. compare the MBH mass
@@ -29,8 +32,10 @@ Things each reader MUST take care of (and document in its docstring)
 from __future__ import annotations
 
 import abc
+import warnings
 from pathlib import Path
 
+import h5py
 import numpy as np
 
 from emricat import mock
@@ -101,31 +106,87 @@ def _sanity_checks(cat: Catalogue) -> None:
 # Real readers -- TO BE IMPLEMENTED BY GROUP 1
 # ======================================================================
 class MBHcatReader(BaseReader):
-    """Reader for the MBHcat catalogues (LISA Astrophysics MBHcatalogues, arXiv:2605.00092).
+    """Reader for MBHcat catalogues, format v2.1 (arXiv:2605.00092).
 
-    TODO (Group 1):
-        * describe the file layout here (one file per snapshot? groups per z?),
-        * list the datasets used and their original units,
-        * state the stellar-mass definition and the central-MBH choice.
+    The format is defined by ``src/hdf5_MBHcat_catalog_v2.1.py`` (function
+    ``write_hdf5``). One file per model; the part used here is::
 
-    Expected ``params`` (from the YAML ``population.params``), suggestions:
-        box_size_cmpc : float   side of the simulation box (simulations only)
-        h             : float   little h of the model
-        weights_key   : str     name of the SAM weight dataset (SAMs only)
+        /Header                    attrs: SimulationName, HubbleConstant, OmegaMatter,
+                                          OmegaLambda, BoxSize, RedshiftsAllBHs, ...
+        /AllBHs/Z<z:011.8f>/       one group per snapshot, e.g. "Z01.00312000"
+            BlackHoles/Mass           [M_sun]
+            BlackHoles/NumberDensity  [Mpc^-3]   (1/V_box for simulations, weight for SAMs)
+            BlackHoles/Mdot, RadEff   (not used here)
+            Galaxies/StellarMass      [M_sun]    host galaxy stellar mass
+            Galaxies/DarkMatterMass   [M_sun]    OPTIONAL -> halo_mass (NaN if absent)
+
+    Units in v2.1 are already M_sun and Mpc (no little h), so no conversion
+    is applied here. The snapshot redshift is taken from the group name.
+
+    TODO (Group 1), to check and document:
+        * Each row of /AllBHs is one *MBH*, with its host galaxy properties.
+          If a model stores several MBHs per galaxy, the same galaxy appears
+          several times: decide whether to keep only the most massive MBH per
+          host (needs a host ID, not in v2.1) or keep them all.
+        * Stellar-mass definition of each model (total, within an aperture...).
+        * Resolution cuts per model -> ``population.min_stellar_mass`` / ``min_mbh_mass``.
+        * Rows with zero/NaN masses: currently dropped (see ``_read_raw``).
+
+    params (from the YAML ``population.params``): none required.
     """
 
+    ALLBHS = "AllBHs"
+
+    def _snapshot_keys(self) -> dict[float, str]:
+        """Map snapshot redshift -> group name in /AllBHs."""
+        if self.path is None or not self.path.is_file():
+            raise FileNotFoundError(f"MBHcat file not found: {self.path} (set population.path in the config).")
+        with h5py.File(self.path, "r") as f:
+            return {float(k[1:]): k for k in f[self.ALLBHS].keys()}
+
     def available_redshifts(self) -> np.ndarray:
-        # TODO (Group 1): list the snapshots present in self.path and return their redshifts.
-        raise NotImplementedError("Group 1: MBHcatReader.available_redshifts")
+        return np.sort(np.array(list(self._snapshot_keys())))
+
+    def header(self) -> dict:
+        """All /Header attributes (model metadata: cosmology, box size, resolution...)."""
+        with h5py.File(self.path, "r") as f:
+            return {k: v for k, v in f["Header"].attrs.items()}
 
     def _read_raw(self, redshift: float, rng=None) -> Catalogue:
-        # TODO (Group 1): skeleton of what this method should do
-        #   1. open the HDF5 file/group for this redshift (h5py.File(...))
-        #   2. read MBH mass, stellar mass, halo mass, (spin), galaxy id
-        #   3. convert units -> linear Msun, little-h removed
-        #   4. number_density = 1 / V_box  (or SAM weights)
-        #   5. return Catalogue({...}, meta={"box_volume_cmpc3": ..., "h": ...})
-        raise NotImplementedError("Group 1: MBHcatReader._read_raw")
+        keys = self._snapshot_keys()
+        zs = np.array(list(keys))
+        i = int(np.argmin(np.abs(zs - redshift)))
+        if not np.isclose(zs[i], redshift, rtol=0, atol=1e-6):
+            raise KeyError(f"Snapshot z={redshift} not in {self.path}. Available: {np.sort(zs)}")
+        z_snap = float(zs[i])
+
+        with h5py.File(self.path, "r") as f:
+            g = f[self.ALLBHS][keys[z_snap]]
+            mbh = g["BlackHoles/Mass"][()].astype(float)
+            dens = g["BlackHoles/NumberDensity"][()].astype(float)
+            mstar = g["Galaxies/StellarMass"][()].astype(float)
+            mhalo = g["Galaxies/DarkMatterMass"][()].astype(float) if "DarkMatterMass" in g["Galaxies"] else np.full(mbh.size, np.nan)
+            hdr = f["Header"].attrs
+            meta = {k: hdr[k] for k in ("SimulationName", "ModelType", "HubbleConstant", "OmegaMatter", "OmegaLambda", "BoxSize") if k in hdr}
+
+        # Drop unusable rows (no MBH, no host mass, non-positive weight).
+        ok = (mbh > 0) & (mstar > 0) & (dens > 0) & np.isfinite(mbh) & np.isfinite(mstar) & np.isfinite(dens)
+        n_drop = int((~ok).sum())
+        if n_drop:
+            warnings.warn(f"{self.path.name} z={z_snap}: dropped {n_drop} rows with non-positive/NaN mass or density.")
+
+        meta.update({"snapshot_redshift": z_snap, "n_dropped_rows": n_drop})
+        return Catalogue(
+            {
+                "galaxy_id": np.flatnonzero(ok).astype(np.int64),  # row index in the original file
+                "mbh_mass": mbh[ok],
+                "stellar_mass": mstar[ok],
+                "halo_mass": mhalo[ok],
+                "number_density": dens[ok],
+                "redshift": np.full(int(ok.sum()), z_snap),
+            },
+            meta=meta,
+        )
 
 
 class MockReader(BaseReader):

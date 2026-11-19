@@ -1,0 +1,17 @@
+name: emricat
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - astropy
+  - matplotlib
+  - h5py
+  - pyyaml
+  - pandas
+  - pytest
+  - pip
+  - pip:
+    - gdown

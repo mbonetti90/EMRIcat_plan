@@ -13,12 +13,8 @@ todo = pytest.mark.skip(reason="TODO: implement the function, then this test")
 # ---------------------------------------------------------------- Group 1
 @todo
 def test_group1_mbhcat_reader_mass_function():
-    """Read one MBHcat snapshot; compare the MBH mass function with arXiv:2605.00092."""
-
-
-@todo
-def test_group1_number_density_is_one_over_box():
-    """For a simulation, number_density == 1/V_box for every galaxy."""
+    """Read one real MBHcat snapshot; compare the MBH mass function with arXiv:2605.00092.
+    (The reader itself is tested on a synthetic v2.1 file in test_group1_mbh.py.)"""
 
 
 # ---------------------------------------------------------------- Group 2

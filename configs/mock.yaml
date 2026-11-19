@@ -1,5 +1,5 @@
 # =====================================================================
-# MOCK run: every step uses TOY prescriptions (emricat/mock.py).
+# MOCK run: every step uses TOY prescriptions (src/emricat/mock.py).
 # Purpose: test the plumbing, the plots and the timing. NOT PHYSICS.
 #
 #   python -m emricat.pipeline configs/mock.yaml

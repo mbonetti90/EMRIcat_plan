@@ -15,7 +15,7 @@ can be run end-to-end *today*, before the real prescriptions are coded. They let
 
 Every number below is a rough placeholder chosen to give plausible orders of
 magnitude. **Never use the "toy"/"mock" options for science runs.** The
-real implementations live in emricat/mbh, emricat/nsc, emricat/emri.
+real implementations live in src/emricat/mbh, src/emricat/nsc, src/emricat/emri.
 """
 
 from __future__ import annotations

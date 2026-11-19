@@ -19,11 +19,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+data = ["gdown"]       # for download_data.py
 
 [project.scripts]
 emricat-run = "emricat.pipeline:main"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["emricat*"]
 
 [tool.setuptools.package-data]
@@ -31,3 +33,4 @@ emricat = ["plotting/*.mplstyle", "data/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]   # tests run even without `pip install -e .`
